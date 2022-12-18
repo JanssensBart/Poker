@@ -7,21 +7,30 @@ const cors = require("cors");
 const path = require("path")
 const cookieParser = require('cookie-parser')
 const serverPort = process.env.serverPort || 3500
+const credentials = require('./middleware/credentials')
 const corsOptions = require("./config/corsOptions")
 const connectDB = require("./config/dbConn")
 const mongoose = require('mongoose')
 
+// connect to mongoDB
 connectDB()
 
 app.use(express.json())
 app.use(cookieParser())
+app.use(express.urlencoded({ extended :false }))
+app.use(credentials)
 app.use(cors(corsOptions));
 
 // serve a simple server homepage over http
 app.use('/', express.static(path.join(__dirname,"public")))
 app.use('/', require("./Routes/root") )
+app.use('/register', require('./routes/api/register'));
+app.use('/auth', require('./routes/api/auth'));
+
+// protected routes
 app.use('/users', require('./routes/api/users'));
-// this should be last 
+
+// if none of the above matches
 app.all('*' , (req,res) => {
     res.status(404)
     if(req.accepts('html')) {
@@ -33,10 +42,8 @@ app.all('*' , (req,res) => {
     }
 });
 
-// io server setup
+// socketIO server setup
 const server = http.createServer(app)
-
-
 // initialize io server
 const io = new Server(server, {
     cors : {
@@ -45,17 +52,11 @@ const io = new Server(server, {
     },
 });
 
-
-
-
-
 io.on("connection", (socket)=> {
     console.log(`user connected to ${socket.handshake.headers.host}`)
 
     socket.on('join' , (payload)=> {
-        console.log(payload)
-
-        
+        console.log(payload)  
     })
 
     socket.on("disconnect", async () => {
@@ -63,6 +64,8 @@ io.on("connection", (socket)=> {
       });
 })
 
+
+// only listen if connection is granted
 mongoose.connection.once('open' , ()=> {
     console.log("Connected to MongoDB")
     server.listen( serverPort, ()=>{

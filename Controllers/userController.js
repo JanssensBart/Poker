@@ -96,8 +96,6 @@ const deleteUser = asyncHandler(async (req, res) => {
         return res.status(400).json({ message : "User ID Required"})
     }
 
-    // ! will the wallet be deleted aswell ?
-
     const user = await User.findById(id).exec()
 
     if(!user){
@@ -112,6 +110,14 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 })
 
+// @desc Get a single user
+// @route GET/user/:username
+// @access Private
+const getUser = async (req, res) => {
+    console.log('function worked')
+   return req.params.username
+}
+
 
 
 
@@ -120,5 +126,6 @@ module.exports = {
     getAllUsers,
     createNewUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    getUser
 }

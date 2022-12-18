@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-
 const userSchema = new Schema({
 
     username : {
@@ -12,13 +11,14 @@ const userSchema = new Schema({
         type : String,
         required : [true, "Password is required"]
     },
-    roles : [
-        {
-            type: String,
-            default: "User"
-        }
-    ],
-    
+    roles : {
+        User: {
+            type : Number,
+            default : 2001
+        },
+        Moderator : Number,
+        Admin:  Number, 
+    }
 })
 
 const User = mongoose.model('User', userSchema)
